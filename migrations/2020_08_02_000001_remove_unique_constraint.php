@@ -14,10 +14,28 @@ use Illuminate\Database\Schema\Builder;
 
 return [
     'up' => function (Builder $schema) {
-        $schema->table('push_subscriptions', function (Blueprint $table) {
-            $table->dropUnique(['endpoint']);
-        });
+        if ($schema->hasTable('push_subscriptions')) {
+            // 检查唯一索引是否存在
+            $connection = $schema->getConnection();
+            $indexes = $connection->getDoctrineSchemaManager()
+                ->listTableIndexes('push_subscriptions');
+            
+            $hasUniqueIndex = false;
+            foreach ($indexes as $index) {
+                if ($index->isUnique() && in_array('endpoint', $index->getColumns())) {
+                    $hasUniqueIndex = true;
+                    break;
+                }
+            }
+            
+            if ($hasUniqueIndex) {
+                $schema->table('push_subscriptions', function (Blueprint $table) {
+                    $table->dropUnique(['endpoint']);
+                });
+            }
+        }
     },
     'down' => function (Builder $schema) {
+        // 不执行删除操作
     },
 ];

@@ -14,10 +14,13 @@ use Illuminate\Database\Schema\Builder;
 
 return [
     'up' => function (Builder $schema) {
-        $schema->table('push_subscriptions', function (Blueprint $table) {
-            $table->string('endpoint')->collation('utf8mb4_bin')->change();
-        });
+        if ($schema->hasTable('push_subscriptions') && $schema->hasColumn('push_subscriptions', 'endpoint')) {
+            $schema->table('push_subscriptions', function (Blueprint $table) {
+                $table->string('endpoint')->collation('utf8mb4_bin')->change();
+            });
+        }
     },
     'down' => function (Builder $schema) {
+        // 不执行删除操作
     },
 ];
